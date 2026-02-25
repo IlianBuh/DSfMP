@@ -1,0 +1,102 @@
+import * as SQLite from 'expo-sqlite';
+
+export interface Resume {
+    id: number;
+    fullName: string;
+    profession: string;
+    email: string;
+    phone: string;
+    experience: string;
+    education: string;
+    skills: string;
+    createdAt: string;
+}
+
+export type ResumeInput = Omit<Resume, 'id' | 'createdAt'>;
+
+let db: SQLite.SQLiteDatabase | null = null;
+
+export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
+    db = await SQLite.openDatabaseAsync('resumes.db');
+
+    await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS resumes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      fullName TEXT NOT NULL,
+      profession TEXT NOT NULL,
+      email TEXT DEFAULT '',
+      phone TEXT DEFAULT '',
+      experience TEXT DEFAULT '',
+      education TEXT DEFAULT '',
+      skills TEXT DEFAULT '',
+      createdAt TEXT DEFAULT (datetime('now','localtime'))
+    );
+  `);
+
+    return db;
+};
+
+export const getDatabase = (): SQLite.SQLiteDatabase => {
+    if (!db) {
+        throw new Error('Database not initialized. Call initDatabase first.');
+    }
+    return db;
+};
+
+export const getResumes = async (): Promise<Resume[]> => {
+    const database = getDatabase();
+    const result = await database.getAllAsync<Resume>(
+        'SELECT * FROM resumes ORDER BY createdAt DESC'
+    );
+    return result;
+};
+
+export const getResume = async (id: number): Promise<Resume | null> => {
+    const database = getDatabase();
+    const result = await database.getFirstAsync<Resume>(
+        'SELECT * FROM resumes WHERE id = ?',
+        [id]
+    );
+    return result;
+};
+
+export const addResume = async (resume: ResumeInput): Promise<number> => {
+    const database = getDatabase();
+    const result = await database.runAsync(
+        `INSERT INTO resumes (fullName, profession, email, phone, experience, education, skills)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+            resume.fullName,
+            resume.profession,
+            resume.email || '',
+            resume.phone || '',
+            resume.experience || '',
+            resume.education || '',
+            resume.skills || '',
+        ]
+    );
+    return result.lastInsertRowId;
+};
+
+export const updateResume = async (id: number, resume: ResumeInput): Promise<void> => {
+    const database = getDatabase();
+    await database.runAsync(
+        `UPDATE resumes SET fullName = ?, profession = ?, email = ?, phone = ?,
+     experience = ?, education = ?, skills = ? WHERE id = ?`,
+        [
+            resume.fullName,
+            resume.profession,
+            resume.email || '',
+            resume.phone || '',
+            resume.experience || '',
+            resume.education || '',
+            resume.skills || '',
+            id,
+        ]
+    );
+};
+
+export const deleteResume = async (id: number): Promise<void> => {
+    const database = getDatabase();
+    await database.runAsync('DELETE FROM resumes WHERE id = ?', [id]);
+};

@@ -1,0 +1,40 @@
+{
+    "app": {
+        "title": "Resume Builder"
+    },
+    "home": {
+        "title": "My Resumes",
+        "empty": "No resumes yet",
+        "emptyHint": "Tap + to create your first resume",
+        "delete": "Delete",
+        "deleteConfirm": "Are you sure you want to delete this resume?",
+        "cancel": "Cancel",
+        "created": "Created"
+    },
+    "resume": {
+        "new": "New Resume",
+        "edit": "Edit Resume",
+        "fullName": "Full Name",
+        "profession": "Profession",
+        "email": "Email",
+        "phone": "Phone",
+        "experience": "Work Experience",
+        "education": "Education",
+        "skills": "Skills",
+        "save": "Save",
+        "update": "Update",
+        "required": "This field is required",
+        "savedSuccess": "Resume saved successfully",
+        "updatedSuccess": "Resume updated successfully"
+    },
+    "settings": {
+        "title": "Settings",
+        "appearance": "Appearance",
+        "darkTheme": "Dark Theme",
+        "language": "Language",
+        "russian": "Russian",
+        "english": "English",
+        "about": "About",
+        "version": "Version"
+    }
+}
