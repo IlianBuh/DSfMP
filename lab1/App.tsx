@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Font from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { initDatabase } from './src/database/db';
 import AppNavigator from './src/navigation/AppNavigator';
@@ -10,31 +12,34 @@ import './src/i18n';
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
-    const [dbReady, setDbReady] = useState(false);
+    const [appReady, setAppReady] = useState(false);
     const { isLoaded, theme } = useTheme();
 
     useEffect(() => {
         async function prepare() {
             try {
+                await Font.loadAsync(Ionicons.font);
                 await initDatabase();
-                setDbReady(true);
+                setAppReady(true);
             } catch (e) {
-                console.error('Failed to initialize database:', e);
+                console.error('Failed to initialize app:', e);
+                // Even if fonts fail, still show the app
+                setAppReady(true);
             }
         }
         prepare();
     }, []);
 
     useEffect(() => {
-        if (dbReady && isLoaded) {
+        if (appReady && isLoaded) {
             SplashScreen.hideAsync();
         }
-    }, [dbReady, isLoaded]);
+    }, [appReady, isLoaded]);
 
-    if (!dbReady || !isLoaded) {
+    if (!appReady || !isLoaded) {
         return (
-            <View style={[styles.loading, { backgroundColor: theme.background }]}>
-                <ActivityIndicator size="large" color={theme.primary} />
+            <View style={[styles.loading, { backgroundColor: '#1a1a2e' }]}>
+                <ActivityIndicator size="large" color="#4cc9f0" />
             </View>
         );
     }
