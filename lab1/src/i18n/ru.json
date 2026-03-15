@@ -9,7 +9,11 @@
         "delete": "Удалить",
         "deleteConfirm": "Вы уверены, что хотите удалить это резюме?",
         "cancel": "Отмена",
-        "created": "Создано"
+        "created": "Создано",
+        "count_one": "{{count}} резюме",
+        "count_few": "{{count}} резюме",
+        "count_many": "{{count}} резюме",
+        "count_other": "{{count}} резюме"
     },
     "resume": {
         "new": "Новое резюме",
@@ -27,6 +31,12 @@
         "savedSuccess": "Резюме сохранено",
         "updatedSuccess": "Резюме обновлено"
     },
+    "tips": {
+        "title": "Советы",
+        "empty": "Советы недоступны",
+        "offlineEmpty": "Нет сохранённых советов. Подключитесь к интернету для загрузки.",
+        "cached": "Данные из кэша"
+    },
     "settings": {
         "title": "Настройки",
         "appearance": "Оформление",
@@ -36,5 +46,8 @@
         "english": "English",
         "about": "О приложении",
         "version": "Версия"
+    },
+    "network": {
+        "offline": "Нет подключения к интернету"
     }
 }

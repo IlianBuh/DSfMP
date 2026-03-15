@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
     View,
     Text,
@@ -6,14 +6,14 @@ import {
     TouchableOpacity,
     StyleSheet,
     ScrollView,
-    Alert,
     KeyboardAvoidingView,
     Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
-import { addResume, getResume, updateResume, ResumeInput } from '../database/db';
+import { useResumeForm } from '../viewmodels/useResumeForm';
+import { ResumeInput } from '../database/db';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 type ResumeScreenProps = NativeStackScreenProps<any, 'Resume'>;
@@ -22,69 +22,7 @@ export default function ResumeScreen({ route, navigation }: ResumeScreenProps) {
     const { t } = useTranslation();
     const { theme } = useTheme();
     const resumeId: number | undefined = route.params?.resumeId;
-    const isEditing = !!resumeId;
-
-    const [form, setForm] = useState<ResumeInput>({
-        fullName: '',
-        profession: '',
-        email: '',
-        phone: '',
-        experience: '',
-        education: '',
-        skills: '',
-    });
-    const [errors, setErrors] = useState<Record<string, string | null>>({});
-
-    useEffect(() => {
-        if (isEditing && resumeId) {
-            loadResume();
-        }
-    }, [resumeId]);
-
-    const loadResume = async () => {
-        if (!resumeId) return;
-        try {
-            const data = await getResume(resumeId);
-            if (data) {
-                setForm({
-                    fullName: data.fullName || '',
-                    profession: data.profession || '',
-                    email: data.email || '',
-                    phone: data.phone || '',
-                    experience: data.experience || '',
-                    education: data.education || '',
-                    skills: data.skills || '',
-                });
-            }
-        } catch (error) {
-            console.error('Failed to load resume:', error);
-        }
-    };
-
-    const validate = (): boolean => {
-        const newErrors: Record<string, string> = {};
-        if (!form.fullName.trim()) newErrors.fullName = t('resume.required');
-        if (!form.profession.trim()) newErrors.profession = t('resume.required');
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleSave = async () => {
-        if (!validate()) return;
-
-        try {
-            if (isEditing && resumeId) {
-                await updateResume(resumeId, form);
-                Alert.alert('✓', t('resume.updatedSuccess'));
-            } else {
-                await addResume(form);
-                Alert.alert('✓', t('resume.savedSuccess'));
-            }
-            navigation.goBack();
-        } catch (error) {
-            console.error('Failed to save resume:', error);
-        }
-    };
+    const { form, errors, isEditing, updateField, handleSave } = useResumeForm(resumeId);
 
     const renderInput = (
         field: keyof ResumeInput,
@@ -108,12 +46,7 @@ export default function ResumeScreen({ route, navigation }: ResumeScreenProps) {
                     },
                 ]}
                 value={form[field]}
-                onChangeText={(value: string) => {
-                    setForm((prev) => ({ ...prev, [field]: value }));
-                    if (errors[field]) {
-                        setErrors((prev) => ({ ...prev, [field]: null }));
-                    }
-                }}
+                onChangeText={(value: string) => updateField(field, value)}
                 placeholder={t(`resume.${field}`)}
                 placeholderTextColor={theme.textSecondary}
                 multiline={options.multiline}
@@ -169,7 +102,7 @@ export default function ResumeScreen({ route, navigation }: ResumeScreenProps) {
             <View style={[styles.footer, { backgroundColor: theme.surface, borderTopColor: theme.border }]}>
                 <TouchableOpacity
                     style={[styles.saveBtn, { backgroundColor: theme.primary }]}
-                    onPress={handleSave}
+                    onPress={() => handleSave(() => navigation.goBack())}
                     activeOpacity={0.8}
                 >
                     <Ionicons name="checkmark" size={20} color={theme.textOnPrimary} />

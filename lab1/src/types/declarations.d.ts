@@ -20,6 +20,7 @@ declare module 'react-native' {
     export const Switch: ComponentType<any>;
     export const ActivityIndicator: ComponentType<any>;
     export const KeyboardAvoidingView: ComponentType<any>;
+    export const RefreshControl: ComponentType<any>;
     export const Alert: {
         alert: (title: string, message?: string, buttons?: any[], options?: any) => void;
     };
@@ -56,7 +57,7 @@ declare module 'react-i18next' {
 }
 
 declare module 'i18next' {
-    export type TFunction = (key: string) => string;
+    export type TFunction = (key: string, options?: Record<string, any>) => string;
     interface i18n {
         use(module: any): i18n;
         init(options: any): Promise<any>;
@@ -91,6 +92,7 @@ declare module '@expo/vector-icons' {
     }
     export const Ionicons: ComponentType<IconProps> & {
         glyphMap: Record<string, number>;
+        font: any;
     };
 }
 
@@ -152,4 +154,17 @@ declare module '*.json' {
 declare module 'expo' {
     import { ComponentType } from 'react';
     export function registerRootComponent(component: ComponentType<any>): void;
+}
+
+declare module '@react-native-community/netinfo' {
+    interface NetInfoState {
+        isConnected: boolean | null;
+        type: string;
+    }
+    interface NetInfo {
+        fetch(): Promise<NetInfoState>;
+        addEventListener(listener: (state: NetInfoState) => void): () => void;
+    }
+    const netinfo: NetInfo;
+    export default netinfo;
 }

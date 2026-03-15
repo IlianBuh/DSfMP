@@ -1,17 +1,17 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import {
     View,
     Text,
     FlatList,
     TouchableOpacity,
     StyleSheet,
-    Alert,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
-import { getResumes, deleteResume, Resume } from '../database/db';
+import { useResumes } from '../viewmodels/useResumes';
+import { Resume } from '../database/db';
+import OfflineBanner from '../components/OfflineBanner';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type HomeScreenProps = {
@@ -21,50 +21,7 @@ type HomeScreenProps = {
 export default function HomeScreen({ navigation }: HomeScreenProps) {
     const { t } = useTranslation();
     const { theme } = useTheme();
-    const [resumes, setResumes] = useState<Resume[]>([]);
-
-    useFocusEffect(
-        useCallback(() => {
-            loadResumes();
-        }, [])
-    );
-
-    const loadResumes = async () => {
-        try {
-            const data = await getResumes();
-            setResumes(data);
-        } catch (error) {
-            console.error('Failed to load resumes:', error);
-        }
-    };
-
-    const handleDelete = (id: number) => {
-        Alert.alert(
-            t('home.delete'),
-            t('home.deleteConfirm'),
-            [
-                { text: t('home.cancel'), style: 'cancel' },
-                {
-                    text: t('home.delete'),
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            await deleteResume(id);
-                            await loadResumes();
-                        } catch (error) {
-                            console.error('Failed to delete resume:', error);
-                        }
-                    },
-                },
-            ]
-        );
-    };
-
-    const formatDate = (dateStr: string): string => {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        return date.toLocaleDateString();
-    };
+    const { resumes, handleDelete, formatDate } = useResumes();
 
     const renderItem = ({ item }: { item: Resume }) => (
         <TouchableOpacity
@@ -138,9 +95,10 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                     {t('home.title')}
                 </Text>
                 <Text style={[styles.headerCount, { color: theme.textSecondary }]}>
-                    {resumes.length} {resumes.length === 1 ? 'resume' : 'resumes'}
+                    {t('home.count', { count: resumes.length })}
                 </Text>
             </View>
+            <OfflineBanner />
             <FlatList
                 data={resumes}
                 renderItem={renderItem}

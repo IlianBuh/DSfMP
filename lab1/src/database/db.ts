@@ -14,6 +14,13 @@ export interface Resume {
 
 export type ResumeInput = Omit<Resume, 'id' | 'createdAt'>;
 
+export interface CachedTip {
+    id: number;
+    quote: string;
+    author: string;
+    cachedAt: string;
+}
+
 let db: SQLite.SQLiteDatabase | null = null;
 
 export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
@@ -33,6 +40,15 @@ export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
     );
   `);
 
+    await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS tips_cache (
+      id INTEGER PRIMARY KEY,
+      quote TEXT NOT NULL,
+      author TEXT NOT NULL,
+      cachedAt TEXT DEFAULT (datetime('now','localtime'))
+    );
+  `);
+
     return db;
 };
 
@@ -42,6 +58,8 @@ export const getDatabase = (): SQLite.SQLiteDatabase => {
     }
     return db;
 };
+
+// ── Resume CRUD ──
 
 export const getResumes = async (): Promise<Resume[]> => {
     const database = getDatabase();
@@ -99,4 +117,25 @@ export const updateResume = async (id: number, resume: ResumeInput): Promise<voi
 export const deleteResume = async (id: number): Promise<void> => {
     const database = getDatabase();
     await database.runAsync('DELETE FROM resumes WHERE id = ?', [id]);
+};
+
+// ── Tips Cache ──
+
+export const cacheTips = async (tips: { id: number; quote: string; author: string }[]): Promise<void> => {
+    const database = getDatabase();
+    await database.runAsync('DELETE FROM tips_cache');
+    for (const tip of tips) {
+        await database.runAsync(
+            'INSERT OR REPLACE INTO tips_cache (id, quote, author) VALUES (?, ?, ?)',
+            [tip.id, tip.quote, tip.author]
+        );
+    }
+};
+
+export const getCachedTips = async (): Promise<CachedTip[]> => {
+    const database = getDatabase();
+    const result = await database.getAllAsync<CachedTip>(
+        'SELECT * FROM tips_cache ORDER BY id ASC'
+    );
+    return result;
 };

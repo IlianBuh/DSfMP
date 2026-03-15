@@ -4,6 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { NetworkProvider } from './src/context/NetworkContext';
 import { initDatabase } from './src/database/db';
 import AppNavigator from './src/navigation/AppNavigator';
 import './src/i18n';
@@ -49,9 +50,11 @@ function AppContent() {
 
 export default function App() {
     return (
-        <ThemeProvider>
-            <AppContent />
-        </ThemeProvider>
+        <NetworkProvider>
+            <ThemeProvider>
+                <AppContent />
+            </ThemeProvider>
+        </NetworkProvider>
     );
 }
 

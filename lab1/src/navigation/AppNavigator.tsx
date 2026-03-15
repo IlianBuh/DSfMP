@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 
 import HomeScreen from '../screens/HomeScreen';
 import ResumeScreen from '../screens/ResumeScreen';
+import TipsScreen from '../screens/TipsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 export type HomeStackParamList = {
@@ -71,6 +72,16 @@ export default function AppNavigator() {
                         tabBarLabel: t('home.title'),
                         tabBarIcon: ({ color, size }: { color: string; size: number }) => (
                             <Ionicons name="document-text" size={size} color={color} />
+                        ),
+                    }}
+                />
+                <Tab.Screen
+                    name="Tips"
+                    component={TipsScreen}
+                    options={{
+                        tabBarLabel: t('tips.title'),
+                        tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+                            <Ionicons name="bulb" size={size} color={color} />
                         ),
                     }}
                 />

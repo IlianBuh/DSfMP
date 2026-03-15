@@ -9,7 +9,9 @@
         "delete": "Delete",
         "deleteConfirm": "Are you sure you want to delete this resume?",
         "cancel": "Cancel",
-        "created": "Created"
+        "created": "Created",
+        "count_one": "{{count}} resume",
+        "count_other": "{{count}} resumes"
     },
     "resume": {
         "new": "New Resume",
@@ -27,6 +29,12 @@
         "savedSuccess": "Resume saved successfully",
         "updatedSuccess": "Resume updated successfully"
     },
+    "tips": {
+        "title": "Tips",
+        "empty": "No tips available",
+        "offlineEmpty": "No cached tips. Connect to the internet to load tips.",
+        "cached": "Showing cached data"
+    },
     "settings": {
         "title": "Settings",
         "appearance": "Appearance",
@@ -36,5 +44,8 @@
         "english": "English",
         "about": "About",
         "version": "Version"
+    },
+    "network": {
+        "offline": "No internet connection"
     }
 }
