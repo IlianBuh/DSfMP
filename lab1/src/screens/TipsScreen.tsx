@@ -17,7 +17,7 @@ import type { Tip } from '../services/api';
 export default function TipsScreen() {
     const { t } = useTranslation();
     const { theme } = useTheme();
-    const { tips, loading, refreshing, isFromCache, isConnected, onRefresh } = useTips();
+    const { tips, loading, refreshing, loadingMore, hasMore, isFromCache, isConnected, onRefresh, loadMore } = useTips();
 
     const renderItem = ({ item }: { item: Tip }) => (
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
@@ -88,6 +88,10 @@ export default function TipsScreen() {
                 ]}
                 ListEmptyComponent={renderEmpty}
                 showsVerticalScrollIndicator={false}
+                onEndReached={() => {
+                    if (hasMore) loadMore();
+                }}
+                onEndReachedThreshold={0.4}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
@@ -95,6 +99,13 @@ export default function TipsScreen() {
                         tintColor={theme.primary}
                         colors={[theme.primary]}
                     />
+                }
+                ListFooterComponent={
+                    loadingMore ? (
+                        <View style={styles.footerLoading}>
+                            <ActivityIndicator size="small" color={theme.primary} />
+                        </View>
+                    ) : null
                 }
             />
         </View>
@@ -176,5 +187,9 @@ const styles = StyleSheet.create({
         marginTop: 16,
         textAlign: 'center',
         paddingHorizontal: 40,
+    },
+    footerLoading: {
+        paddingVertical: 16,
+        alignItems: 'center',
     },
 });

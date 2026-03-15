@@ -121,7 +121,14 @@ export const deleteResume = async (id: number): Promise<void> => {
 
 // ── Tips Cache ──
 
-export const cacheTips = async (tips: { id: number; quote: string; author: string }[]): Promise<void> => {
+export const clearTipsCache = async (): Promise<void> => {
+    const database = getDatabase();
+    await database.runAsync('DELETE FROM tips_cache');
+};
+
+export const replaceTipsCache = async (
+    tips: { id: number; quote: string; author: string }[]
+): Promise<void> => {
     const database = getDatabase();
     await database.runAsync('DELETE FROM tips_cache');
     for (const tip of tips) {
@@ -131,6 +138,21 @@ export const cacheTips = async (tips: { id: number; quote: string; author: strin
         );
     }
 };
+
+export const upsertTipsCache = async (
+    tips: { id: number; quote: string; author: string }[]
+): Promise<void> => {
+    const database = getDatabase();
+    for (const tip of tips) {
+        await database.runAsync(
+            'INSERT OR REPLACE INTO tips_cache (id, quote, author) VALUES (?, ?, ?)',
+            [tip.id, tip.quote, tip.author]
+        );
+    }
+};
+
+// Backwards-compatible alias (used in older code paths)
+export const cacheTips = replaceTipsCache;
 
 export const getCachedTips = async (): Promise<CachedTip[]> => {
     const database = getDatabase();
