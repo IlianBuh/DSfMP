@@ -8,6 +8,7 @@ import {
     ScrollView,
     KeyboardAvoidingView,
     Platform,
+    Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -22,7 +23,7 @@ export default function ResumeScreen({ route, navigation }: ResumeScreenProps) {
     const { t } = useTranslation();
     const { theme } = useTheme();
     const resumeId: number | undefined = route.params?.resumeId;
-    const { form, errors, isEditing, updateField, handleSave } = useResumeForm(resumeId);
+    const { form, errors, isEditing, updateField, handleSave, pickImage } = useResumeForm(resumeId);
 
     const renderInput = (
         field: keyof ResumeInput,
@@ -65,6 +66,16 @@ export default function ResumeScreen({ route, navigation }: ResumeScreenProps) {
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
+            <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+    {form.photoUrl ? (
+        <Image source={{ uri: form.photoUrl }} style={styles.avatar} />
+    ) : (
+        <View style={styles.placeholder}>
+            <Ionicons name="camera-outline" size={40} color={theme.textSecondary} />
+            <Text style={{color: theme.textSecondary}}>Добавить фото</Text>
+        </View>
+    )}
+</TouchableOpacity>
             <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
                     <Ionicons name="arrow-back" size={24} color={theme.text} />
@@ -196,5 +207,27 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
         marginLeft: 8,
+    },
+    imagePicker: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        alignSelf: 'center',
+        marginBottom: 24,
+        overflow: 'hidden',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        borderColor: '#ccc',
+    },
+    avatar: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    placeholder: {
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });

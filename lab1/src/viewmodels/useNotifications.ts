@@ -84,11 +84,15 @@ export function useNotifications() {
             content: {
                 title: 'Resume Builder',
                 body: '📝',
+                android: {
+                    channelId: 'daily-reminder', 
+                }
             },
             trigger: {
                 type: 'daily',
                 hour: h,
                 minute: m,
+                repeats: true,
             },
         });
     }, []);

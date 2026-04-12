@@ -1,39 +1,3 @@
-declare module 'react-native' {
-    import { ComponentType, ReactNode } from 'react';
-
-    export interface ViewStyle {
-        [key: string]: any;
-    }
-    export interface TextStyle {
-        [key: string]: any;
-    }
-    export interface ImageStyle {
-        [key: string]: any;
-    }
-
-    export const View: ComponentType<any>;
-    export const Text: ComponentType<any>;
-    export const TextInput: ComponentType<any>;
-    export const TouchableOpacity: ComponentType<any>;
-    export const FlatList: ComponentType<any>;
-    export const ScrollView: ComponentType<any>;
-    export const Switch: ComponentType<any>;
-    export const ActivityIndicator: ComponentType<any>;
-    export const KeyboardAvoidingView: ComponentType<any>;
-    export const RefreshControl: ComponentType<any>;
-    export const Alert: {
-        alert: (title: string, message?: string, buttons?: any[], options?: any) => void;
-    };
-    export const Platform: {
-        OS: 'ios' | 'android' | 'web';
-        select: (obj: any) => any;
-    };
-    export const StyleSheet: {
-        create: <T extends Record<string, any>>(styles: T) => T;
-    };
-    export const FormData: any;
-}
-
 declare module '@react-native-async-storage/async-storage' {
     export interface AsyncStorageStatic {
         getItem(key: string): Promise<string | null>;
@@ -170,16 +134,6 @@ declare module '@react-native-community/netinfo' {
     export default netinfo;
 }
 
-declare module 'expo-notifications' {
-    export function getPermissionsAsync(): Promise<{ status: string }>;
-    export function requestPermissionsAsync(): Promise<{ status: string }>;
-    export function setNotificationChannelAsync(id: string, config: any): Promise<any>;
-    export function scheduleNotificationAsync(config: {
-        content: { title: string; body: string };
-        trigger: any;
-    }): Promise<string>;
-    export function cancelAllScheduledNotificationsAsync(): Promise<void>;
-}
 
 declare module 'expo-device' {
     export const isDevice: boolean;

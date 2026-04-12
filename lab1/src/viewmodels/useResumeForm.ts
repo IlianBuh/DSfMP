@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Alert } from 'react-native';
+import { Alert, DeviceEventEmitter } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { addResume, getResume, updateResume, ResumeInput } from '../database/db';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadFile } from '../service/imageService';
 
 export function useResumeForm(resumeId?: number) {
     const { t } = useTranslation();
@@ -15,6 +17,7 @@ export function useResumeForm(resumeId?: number) {
         experience: '',
         education: '',
         skills: '',
+        photoUrl: '',
     });
     const [errors, setErrors] = useState<Record<string, string | null>>({});
 
@@ -22,7 +25,15 @@ export function useResumeForm(resumeId?: number) {
         if (isEditing && resumeId) {
             loadResume();
         }
-    }, [resumeId]);
+       
+        const sub = DeviceEventEmitter.addListener('db_updated', () => {
+            if (isEditing && resumeId) {
+                loadResume();
+            }
+        });
+
+        return () => sub.remove();
+    }, [resumeId, isEditing]);
 
     const loadResume = async () => {
         if (!resumeId) return;
@@ -37,6 +48,7 @@ export function useResumeForm(resumeId?: number) {
                     experience: data.experience || '',
                     education: data.education || '',
                     skills: data.skills || '',
+                    photoUrl: data.photoUrl || '',
                 });
             }
         } catch (error) {
@@ -56,6 +68,31 @@ export function useResumeForm(resumeId?: number) {
         setForm((prev) => ({ ...prev, [field]: value }));
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: null }));
+        }
+    };
+    
+    const pickImage = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.7,
+        });
+
+        if (!result.canceled) {
+            try {
+                const asset = result.assets[0];
+                const localUri = asset.uri;
+                
+                const fileName = `avatar_${Date.now()}.${localUri.split('.').pop()}`;
+
+                const cloudUrl = await uploadFile(localUri, fileName);
+                
+                updateField('photoUrl', cloudUrl);
+            } catch (e: any) {
+                console.log("FULL ERROR OBJECT:", JSON.stringify(e)); // Это покажет всё
+                Alert.alert("Ошибка загрузки", `Детали: ${e.message || 'Неизвестная ошибка'}`);
+            }
         }
     };
 
@@ -82,5 +119,6 @@ export function useResumeForm(resumeId?: number) {
         isEditing,
         updateField,
         handleSave,
+        pickImage,
     };
 }

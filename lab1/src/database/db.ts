@@ -10,6 +10,7 @@ export interface Resume {
     education: string;
     skills: string;
     createdAt: string;
+    photoUrl?: string; // Поле уже есть в интерфейсе
 }
 
 export type ResumeInput = Omit<Resume, 'id' | 'createdAt'>;
@@ -24,7 +25,7 @@ export interface CachedTip {
 let db: SQLite.SQLiteDatabase | null = null;
 
 export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
-    db = await SQLite.openDatabaseAsync('resumes.db');
+    db = await SQLite.openDatabaseAsync('resumes_v2.db');
 
     await db.execAsync(`
     CREATE TABLE IF NOT EXISTS resumes (
@@ -36,7 +37,8 @@ export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
       experience TEXT DEFAULT '',
       education TEXT DEFAULT '',
       skills TEXT DEFAULT '',
-      createdAt TEXT DEFAULT (datetime('now','localtime'))
+      createdAt TEXT DEFAULT (datetime('now','localtime')),
+      photoUrl TEXT DEFAULT '' 
     );
   `);
 
@@ -81,8 +83,8 @@ export const getResume = async (id: number): Promise<Resume | null> => {
 export const addResume = async (resume: ResumeInput): Promise<number> => {
     const database = getDatabase();
     const result = await database.runAsync(
-        `INSERT INTO resumes (fullName, profession, email, phone, experience, education, skills)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO resumes (fullName, profession, email, phone, experience, education, skills, photoUrl)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, // Добавлен 8-й аргумент
         [
             resume.fullName,
             resume.profession,
@@ -91,6 +93,7 @@ export const addResume = async (resume: ResumeInput): Promise<number> => {
             resume.experience || '',
             resume.education || '',
             resume.skills || '',
+            resume.photoUrl || '', // Передаем ссылку на фото
         ]
     );
     return result.lastInsertRowId;
@@ -100,7 +103,7 @@ export const updateResume = async (id: number, resume: ResumeInput): Promise<voi
     const database = getDatabase();
     await database.runAsync(
         `UPDATE resumes SET fullName = ?, profession = ?, email = ?, phone = ?,
-     experience = ?, education = ?, skills = ? WHERE id = ?`,
+     experience = ?, education = ?, skills = ?, photoUrl = ? WHERE id = ?`, // Добавлен photoUrl
         [
             resume.fullName,
             resume.profession,
@@ -109,6 +112,7 @@ export const updateResume = async (id: number, resume: ResumeInput): Promise<voi
             resume.experience || '',
             resume.education || '',
             resume.skills || '',
+            resume.photoUrl || '', // Передаем ссылку на фото
             id,
         ]
     );
@@ -151,13 +155,16 @@ export const upsertTipsCache = async (
     }
 };
 
-// Backwards-compatible alias (used in older code paths)
-export const cacheTips = replaceTipsCache;
-
 export const getCachedTips = async (): Promise<CachedTip[]> => {
     const database = getDatabase();
     const result = await database.getAllAsync<CachedTip>(
         'SELECT * FROM tips_cache ORDER BY id ASC'
     );
     return result;
+};
+
+export const clearAllResumes = async (): Promise<void> => {
+    const database = getDatabase();
+    await database.runAsync('DELETE FROM resumes');
+    await database.runAsync('DELETE FROM sqlite_sequence WHERE name="resumes"');
 };

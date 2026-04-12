@@ -1,89 +1,75 @@
-import { useState, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNetwork } from '../context/NetworkContext';
-import { getResumes, addResume } from '../database/db';
-import { uploadResumes, fetchRemoteResumes } from '../services/remoteApi';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
+import { addResume, clearAllResumes, getResumes } from '../database/db';
+import { DeviceEventEmitter } from 'react-native';
 
+// Ключи данных, которые мы синхронизируем (например, данные резюме)
+const USER_DATA_KEY = '@user_resume_data'; 
 const LAST_SYNC_KEY = '@last_sync_time';
 
 export function useRemoteSync() {
-    const { isConnected } = useNetwork();
     const [syncing, setSyncing] = useState(false);
     const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    // Load last sync time on mount
-    useState(() => {
-        AsyncStorage.getItem(LAST_SYNC_KEY).then((value) => {
-            if (value) setLastSyncTime(value);
-        });
-    });
+    // В реальном приложении ID должен приходить из Firebase Auth
+    const userId = "test_user_123"; 
 
-    const syncToRemote = useCallback(async () => {
-        if (!isConnected) {
-            Alert.alert('Offline', 'Cannot sync without internet connection.');
-            return;
-        }
+    const updateSyncTime = async () => {
+        const time = new Date().toLocaleString();
+        setLastSyncTime(time);
+        await AsyncStorage.setItem(LAST_SYNC_KEY, time);
+    };
 
+    const syncToRemote = async () => {
         setSyncing(true);
         setError(null);
-
         try {
-            const resumes = await getResumes();
-            await uploadResumes(resumes);
+            const allResumes = await getResumes();
+            
+            await setDoc(doc(db, "users", userId), {
+                resumes: allResumes,
+                lastSync: new Date().toISOString()
+            });
 
-            const now = new Date().toLocaleString();
-            setLastSyncTime(now);
-            await AsyncStorage.setItem(LAST_SYNC_KEY, now);
-
-            Alert.alert('✓', 'Resumes uploaded to server successfully.');
+            await updateSyncTime();
         } catch (e: any) {
-            const msg = e?.message || 'Sync failed';
-            setError(msg);
-            console.error('Sync to remote failed:', e);
+            setError(e.message);
         } finally {
             setSyncing(false);
         }
-    }, [isConnected]);
+    };
 
-    const syncFromRemote = useCallback(async () => {
-        if (!isConnected) {
-            Alert.alert('Offline', 'Cannot sync without internet connection.');
-            return;
-        }
-
+    const syncFromRemote = async () => {
         setSyncing(true);
         setError(null);
-
         try {
-            const remoteResumes = await fetchRemoteResumes();
+            const docRef = doc(db, "users", userId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const remoteData = docSnap.data();
+                const resumes = remoteData.resumes || [];
+                // const remoteData = docSnap.data();
+                
+                await clearAllResumes();
 
-            for (const resume of remoteResumes) {
-                await addResume({
-                    fullName: resume.fullName,
-                    profession: resume.profession,
-                    email: resume.email || '',
-                    phone: resume.phone || '',
-                    experience: resume.experience || '',
-                    education: resume.education || '',
-                    skills: resume.skills || '',
-                });
+                for (const res of resumes) {
+                    // Используем твой addResume (он игнорирует старый ID и создает новый)
+                    await addResume(res);
+                }
+
+                DeviceEventEmitter.emit('db_updated');
+            } else {
+                setError("Данные на сервере не найдены");
             }
-
-            const now = new Date().toLocaleString();
-            setLastSyncTime(now);
-            await AsyncStorage.setItem(LAST_SYNC_KEY, now);
-
-            Alert.alert('✓', `Downloaded ${remoteResumes.length} resumes from server.`);
         } catch (e: any) {
-            const msg = e?.message || 'Sync failed';
-            setError(msg);
-            console.error('Sync from remote failed:', e);
+            setError(e.message);
         } finally {
             setSyncing(false);
         }
-    }, [isConnected]);
+    };
 
     return {
         syncing,
