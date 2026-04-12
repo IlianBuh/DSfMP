@@ -1,0 +1,89 @@
+# Implementation Plan: Requirements 6-9
+
+Добавление MVVM-архитектуры, интеграции с внешним API, мониторинга сети и оффлайн-режима в приложение Resume Builder.
+
+## Proposed Changes
+
+### Requirement 6: MVVM Architecture
+
+Выделим бизнес-логику из экранов в кастомные хуки (ViewModels), экраны останутся чистым уровнем представления.
+
+#### [NEW] [useResumes.ts](file:///c:/BSUIR/6sem/mobilki/lab1/src/viewmodels/useResumes.ts)
+Custom hook (ViewModel) для HomeScreen: загрузка списка, удаление, форматирование дат. Экран будет вызывать только хук и рендерить UI.
+
+#### [NEW] [useResumeForm.ts](file:///c:/BSUIR/6sem/mobilki/lab1/src/viewmodels/useResumeForm.ts)
+Custom hook (ViewModel) для ResumeScreen: управление формой, валидация, сохранение/обновление. Экран останется чисто презентационным.
+
+#### [MODIFY] [HomeScreen.tsx](file:///c:/BSUIR/6sem/mobilki/lab1/src/screens/HomeScreen.tsx)
+Убрать всю бизнес-логику (state, загрузка, удаление), заменить на `useResumes()`.
+
+#### [MODIFY] [ResumeScreen.tsx](file:///c:/BSUIR/6sem/mobilki/lab1/src/screens/ResumeScreen.tsx)
+Убрать бизнес-логику формы, заменить на `useResumeForm()`.
+
+---
+
+### Requirement 7: Web API (Career Tips)
+
+Добавим вкладку «Советы» с карьерными цитатами из бесплатного API [DummyJSON Quotes](https://dummyjson.com/quotes) (не требует ключа).
+
+#### [NEW] [api.ts](file:///c:/BSUIR/6sem/mobilki/lab1/src/services/api.ts)
+Сервис для получения цитат: `fetchTips()` → GET `https://dummyjson.com/quotes?limit=20`.
+
+#### [NEW] [useTips.ts](file:///c:/BSUIR/6sem/mobilki/lab1/src/viewmodels/useTips.ts)
+ViewModel: загрузка с API → кэширование в SQLite → отд данных из кэша при оффлайне.
+
+#### [NEW] [TipsScreen.tsx](file:///c:/BSUIR/6sem/mobilki/lab1/src/screens/TipsScreen.tsx)
+Новый экран-вкладка со списком карьерных цитат/советов, pull-to-refresh, баннер оффлайна.
+
+#### [MODIFY] [AppNavigator.tsx](file:///c:/BSUIR/6sem/mobilki/lab1/src/navigation/AppNavigator.tsx)
+Добавить вкладку «Tips» (между Home и Settings).
+
+#### [MODIFY] [en.json](file:///c:/BSUIR/6sem/mobilki/lab1/src/i18n/en.json)
+Добавить ключи: `tips.title`, `tips.empty`, `tips.offline`, `tips.refresh`, `network.offline`.
+
+#### [MODIFY] [ru.json](file:///c:/BSUIR/6sem/mobilki/lab1/src/i18n/ru.json)
+Аналогичные ключи на русском.
+
+---
+
+### Requirement 8: Network Monitoring
+
+#### [NEW] [NetworkContext.tsx](file:///c:/BSUIR/6sem/mobilki/lab1/src/context/NetworkContext.tsx)
+React Context + Provider, использующий `@react-native-community/netinfo` для отслеживания `isConnected`. Хук `useNetwork()` для доступа из компонентов.
+
+#### [NEW] [OfflineBanner.tsx](file:///c:/BSUIR/6sem/mobilki/lab1/src/components/OfflineBanner.tsx)
+Визуальный баннер «Нет подключения к интернету», отображается поверх контента.
+
+#### [MODIFY] [App.tsx](file:///c:/BSUIR/6sem/mobilki/lab1/App.tsx)
+Обернуть приложение в `NetworkProvider`.
+
+---
+
+### Requirement 9: Offline Mode (API Caching)
+
+#### [MODIFY] [db.ts](file:///c:/BSUIR/6sem/mobilki/lab1/src/database/db.ts)
+Добавить таблицу `tips_cache` (id, quote, author, cachedAt). Функции: `cacheTips()`, `getCachedTips()`, `clearTipsCache()`.
+
+> [!IMPORTANT]
+> Потребуется установить пакет `@react-native-community/netinfo` и пересобрать нативный проект (`npx expo prebuild --clean` + `npx expo run:android`).
+
+---
+
+### Dependencies
+
+Новый пакет: `@react-native-community/netinfo`
+
+#### [MODIFY] [declarations.d.ts](file:///c:/BSUIR/6sem/mobilki/lab1/src/types/declarations.d.ts)
+Добавить типы для `@react-native-community/netinfo`.
+
+---
+
+## Verification Plan
+
+### Manual Verification
+Пользователь проверяет на эмуляторе Android:
+
+1. **MVVM**: Убедиться, что приложение работает как раньше (создание, редактирование, удаление резюме)
+2. **Web API**: Открыть вкладку «Советы» → увидеть список цитат, pull-to-refresh обновляет их
+3. **Мониторинг сети**: Включить режим «В самолёте» на эмуляторе → должен появиться баннер «Нет подключения»
+4. **Оффлайн**: В режиме «В самолёте» открыть вкладку «Советы» → должны показаться ранее загруженные цитаты из кэша

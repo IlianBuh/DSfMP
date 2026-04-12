@@ -31,6 +31,7 @@ declare module 'react-native' {
     export const StyleSheet: {
         create: <T extends Record<string, any>>(styles: T) => T;
     };
+    export const FormData: any;
 }
 
 declare module '@react-native-async-storage/async-storage' {
@@ -167,4 +168,23 @@ declare module '@react-native-community/netinfo' {
     }
     const netinfo: NetInfo;
     export default netinfo;
+}
+
+declare module 'expo-notifications' {
+    export function getPermissionsAsync(): Promise<{ status: string }>;
+    export function requestPermissionsAsync(): Promise<{ status: string }>;
+    export function setNotificationChannelAsync(id: string, config: any): Promise<any>;
+    export function scheduleNotificationAsync(config: {
+        content: { title: string; body: string };
+        trigger: any;
+    }): Promise<string>;
+    export function cancelAllScheduledNotificationsAsync(): Promise<void>;
+}
+
+declare module 'expo-device' {
+    export const isDevice: boolean;
+}
+
+declare module 'expo-font' {
+    export function loadAsync(fonts: Record<string, any>): Promise<void>;
 }

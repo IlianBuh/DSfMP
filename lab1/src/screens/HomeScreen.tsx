@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
     FlatList,
     TouchableOpacity,
+    TextInput,
     StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useResumes } from '../viewmodels/useResumes';
+import { useResumeSearch } from '../viewmodels/useResumeSearch';
 import { Resume } from '../database/db';
 import OfflineBanner from '../components/OfflineBanner';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -22,6 +24,20 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     const { t } = useTranslation();
     const { theme } = useTheme();
     const { resumes, handleDelete, formatDate } = useResumes();
+    const {
+        searchQuery,
+        setSearchQuery,
+        sortField,
+        sortOrder,
+        toggleSortField,
+        toggleSortOrder,
+        filterProfession,
+        setFilterProfession,
+        professions,
+        filteredResumes,
+    } = useResumeSearch(resumes);
+
+    const [showProfessionFilter, setShowProfessionFilter] = useState(false);
 
     const renderItem = ({ item }: { item: Resume }) => (
         <TouchableOpacity
@@ -80,13 +96,18 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         <View style={styles.emptyContainer}>
             <Ionicons name="document-text-outline" size={80} color={theme.border} />
             <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-                {t('home.empty')}
+                {searchQuery || filterProfession ? t('home.noResults') : t('home.empty')}
             </Text>
-            <Text style={[styles.emptyHint, { color: theme.textSecondary }]}>
-                {t('home.emptyHint')}
-            </Text>
+            {!searchQuery && !filterProfession && (
+                <Text style={[styles.emptyHint, { color: theme.textSecondary }]}>
+                    {t('home.emptyHint')}
+                </Text>
+            )}
         </View>
     );
+
+    const sortIcon = sortOrder === 'asc' ? 'arrow-up' : 'arrow-down';
+    const sortLabel = sortField === 'date' ? t('home.sortByDate') : t('home.sortByName');
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -99,13 +120,125 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 </Text>
             </View>
             <OfflineBanner />
+
+            {/* Search & Controls */}
+            <View style={[styles.controlsContainer, { backgroundColor: theme.background }]}>
+                <View style={[styles.searchBar, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                    <Ionicons name="search-outline" size={18} color={theme.textSecondary} />
+                    <TextInput
+                        style={[styles.searchInput, { color: theme.text }]}
+                        placeholder={t('home.search')}
+                        placeholderTextColor={theme.textSecondary}
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        autoCapitalize="none"
+                    />
+                    {searchQuery.length > 0 && (
+                        <TouchableOpacity onPress={() => setSearchQuery('')}>
+                            <Ionicons name="close-circle" size={18} color={theme.textSecondary} />
+                        </TouchableOpacity>
+                    )}
+                </View>
+
+                <View style={styles.controlsRow}>
+                    {/* Sort toggle */}
+                    <TouchableOpacity
+                        style={[styles.controlBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                        onPress={toggleSortField}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name="swap-vertical-outline" size={16} color={theme.primary} />
+                        <Text style={[styles.controlBtnText, { color: theme.text }]} numberOfLines={1}>
+                            {sortLabel}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {/* Sort order */}
+                    <TouchableOpacity
+                        style={[styles.controlBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                        onPress={toggleSortOrder}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name={sortIcon} size={16} color={theme.primary} />
+                        <Text style={[styles.controlBtnText, { color: theme.text }]} numberOfLines={1}>
+                            {sortOrder === 'asc' ? 'A→Z' : 'Z→A'}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {/* Profession filter */}
+                    <TouchableOpacity
+                        style={[
+                            styles.controlBtn,
+                            { backgroundColor: theme.surface, borderColor: theme.border },
+                            filterProfession && { backgroundColor: theme.primaryLight, borderColor: theme.primary },
+                        ]}
+                        onPress={() => setShowProfessionFilter(!showProfessionFilter)}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name="funnel-outline" size={16} color={filterProfession ? theme.textOnPrimary : theme.primary} />
+                        <Text
+                            style={[
+                                styles.controlBtnText,
+                                { color: filterProfession ? theme.textOnPrimary : theme.text },
+                            ]}
+                            numberOfLines={1}
+                        >
+                            {filterProfession || t('home.filterByProfession')}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+            {/* Profession filter dropdown */}
+            {showProfessionFilter && (
+                <View style={[styles.dropdown, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                    <TouchableOpacity
+                        style={[
+                            styles.dropdownItem,
+                            !filterProfession && { backgroundColor: theme.surfaceVariant },
+                        ]}
+                        onPress={() => {
+                            setFilterProfession(null);
+                            setShowProfessionFilter(false);
+                        }}
+                    >
+                        <Text style={[styles.dropdownText, { color: theme.primary, fontWeight: '600' }]}>
+                            {t('home.allProfessions')}
+                        </Text>
+                        {!filterProfession && (
+                            <Ionicons name="checkmark" size={18} color={theme.primary} />
+                        )}
+                    </TouchableOpacity>
+                    {professions.map((prof) => (
+                        <TouchableOpacity
+                            key={prof}
+                            style={[
+                                styles.dropdownItem,
+                                filterProfession === prof && { backgroundColor: theme.surfaceVariant },
+                            ]}
+                            onPress={() => {
+                                setFilterProfession(prof);
+                                setShowProfessionFilter(false);
+                            }}
+                        >
+                            <Text style={[styles.dropdownText, { color: theme.text }]} numberOfLines={1}>
+                                {prof}
+                            </Text>
+                            {filterProfession === prof && (
+                                <Ionicons name="checkmark" size={18} color={theme.primary} />
+                            )}
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            )}
+
             <FlatList
-                data={resumes}
+                data={filteredResumes}
                 renderItem={renderItem}
                 keyExtractor={(item: Resume) => item.id.toString()}
                 contentContainerStyle={[
                     styles.list,
-                    resumes.length === 0 && styles.emptyList,
+                    filteredResumes.length === 0 && styles.emptyList,
                 ]}
                 ListEmptyComponent={renderEmpty}
                 showsVerticalScrollIndicator={false}
@@ -138,6 +271,67 @@ const styles = StyleSheet.create({
     headerCount: {
         fontSize: 14,
         marginTop: 4,
+    },
+    controlsContainer: {
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        paddingBottom: 4,
+    },
+    searchBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 10,
+        borderWidth: 1,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        marginBottom: 8,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 15,
+        marginLeft: 8,
+        paddingVertical: 0,
+    },
+    controlsRow: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    controlBtn: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 8,
+        borderWidth: 1,
+        paddingVertical: 8,
+        paddingHorizontal: 8,
+        gap: 4,
+    },
+    controlBtnText: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    dropdown: {
+        marginHorizontal: 16,
+        borderRadius: 10,
+        borderWidth: 1,
+        overflow: 'hidden',
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+    },
+    dropdownItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+    },
+    dropdownText: {
+        fontSize: 14,
+        flex: 1,
     },
     list: {
         padding: 16,

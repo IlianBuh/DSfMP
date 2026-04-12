@@ -19,10 +19,10 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
         const setup = async () => {
             try {
                 const NetInfo = require('@react-native-community/netinfo');
-                // Get initial state
+                
                 const state = await NetInfo.default.fetch();
                 setIsConnected(state.isConnected !== false);
-                // Subscribe to changes
+                
                 unsubscribe = NetInfo.default.addEventListener((state: any) => {
                     setIsConnected(state.isConnected !== false);
                 });

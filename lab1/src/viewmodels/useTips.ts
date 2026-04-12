@@ -33,7 +33,6 @@ export function useTips() {
 
         try {
             if (isConnected) {
-                // Online: fetch first page from API and replace cache
                 const page = await fetchTipsPage({ limit: PAGE_LIMIT, skip: 0 });
                 setTips(page.tips);
                 setIsFromCache(false);
@@ -46,7 +45,6 @@ export function useTips() {
                     console.warn('Failed to replace tips cache:', cacheErr);
                 }
             } else {
-                // Offline: load from cache
                 const cached = await getCachedTips();
                 setTips(cached as unknown as Tip[]);
                 setIsFromCache(cached.length > 0);
@@ -55,7 +53,7 @@ export function useTips() {
             }
         } catch (error) {
             console.error('Failed to load tips:', error);
-            // Fallback to cache on any error
+           
             try {
                 const cached = await getCachedTips();
                 setTips(cached as unknown as Tip[]);

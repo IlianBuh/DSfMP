@@ -1,0 +1,55 @@
+# Оценка выполнения лабораторной работы (Lab 1)
+
+Был проведен детальный анализ исходного кода приложения (React Native + TypeScript + Expo) на соответствие требованиям технического задания. 
+
+## Результаты проверки
+
+### 1. Пользовательский интерфейс: минимум 3 страницы
+> [!NOTE]
+> **Выполнено**: В приложении реализовано 3 полноценных экрана. Для навигации используется `react-navigation` (Bottom Tabs и Native Stack).
+
+- **[HomeScreen](file:///c:/BSUIR/6sem/mobilki/lab1/src/screens/HomeScreen.tsx#21-165)**: Основной экран со списком резюме.
+- **[ResumeScreen](file:///c:/BSUIR/6sem/mobilki/lab1/src/screens/ResumeScreen.tsx#21-184)**: Экран просмотра и редактирования деталей конкретного резюме.
+- **[SettingsScreen](file:///c:/BSUIR/6sem/mobilki/lab1/src/screens/SettingsScreen.tsx#14-126)**: Экран настроек (тема, язык).
+
+### 2. Экран загрузки (Splash Screen)
+> [!NOTE]
+> **Выполнено**: При запуске приложения показывается сплеш-экран.
+
+- Для сплеш-экрана используется библиотека `expo-splash-screen`.
+- В [App.tsx](file:///c:/BSUIR/6sem/mobilki/lab1/App.tsx) сплеш-экран скрывается программно (`SplashScreen.hideAsync()`) только после успешной загрузки темы пользователя из памяти и инициализации локальной базы данных. 
+
+### 3. Поддержка локализации (минимум 2 языка)
+> [!NOTE]
+> **Выполнено**: Поддерживается 2 языка (Русский и Английский).
+
+- Реализовано с помощью `react-i18next` и `i18next`.
+- Имеются словари перевода [ru.json](file:///c:/BSUIR/6sem/mobilki/lab1/src/i18n/ru.json) и [en.json](file:///c:/BSUIR/6sem/mobilki/lab1/src/i18n/en.json).
+- Переключение языка доступно на экране [SettingsScreen](file:///c:/BSUIR/6sem/mobilki/lab1/src/screens/SettingsScreen.tsx#14-126).
+- Выбранный язык корректно сохраняется в `AsyncStorage` (`@app_language`) и восстанавливается после перезагрузки.
+
+### 4. Тема интерфейса (Светлая/Темная)
+> [!NOTE]
+> **Выполнено**: Реализована поддержка светлой и тёмной тем с сохранением состояния.
+
+- Тема глобально управляется через [ThemeContext.tsx](file:///c:/BSUIR/6sem/mobilki/lab1/src/context/ThemeContext.tsx).
+- При переключении в [SettingsScreen](file:///c:/BSUIR/6sem/mobilki/lab1/src/screens/SettingsScreen.tsx#14-126) состояние записывается в `AsyncStorage` (`@app_theme`).
+- Цвета темы (фона, текста, карточек, акцентов) определены в [src/theme/colors.ts](file:///c:/BSUIR/6sem/mobilki/lab1/src/theme/colors.ts) и корректно применяются на всех экранах приложения.
+
+### 5. Локальная база данных (CRUD минимум 3 поля)
+> [!NOTE]
+> **Выполнено**: Используется SQLite для локального хранения структуры с достаточным количеством полей, реализован полный цикл CRUD (Create, Read, Update, Delete).
+
+- База данных (`expo-sqlite`) инициализируется при старте в файле [src/database/db.ts](file:///c:/BSUIR/6sem/mobilki/lab1/src/database/db.ts).
+- Структура таблицы: [id](file:///c:/BSUIR/6sem/mobilki/lab1/src/screens/ResumeScreen.tsx#64-71), `fullName`, `profession`, `email`, `phone`, `experience`, `education`, `skills`, `createdAt` (всего 9 полей, что превосходит требуемые 3).
+- **Create**: Функция [addResume](file:///c:/BSUIR/6sem/mobilki/lab1/src/database/db.ts#63-80) и сохранение на экране [ResumeScreen](file:///c:/BSUIR/6sem/mobilki/lab1/src/screens/ResumeScreen.tsx#21-184).
+- **Read**: Функции [getResumes](file:///c:/BSUIR/6sem/mobilki/lab1/src/database/db.ts#46-53)/[getResume](file:///c:/BSUIR/6sem/mobilki/lab1/src/database/db.ts#54-62) (отображение списка на [HomeScreen](file:///c:/BSUIR/6sem/mobilki/lab1/src/screens/HomeScreen.tsx#21-165) и редактирование на [ResumeScreen](file:///c:/BSUIR/6sem/mobilki/lab1/src/screens/ResumeScreen.tsx#21-184)).
+- **Update**: Функция [updateResume](file:///c:/BSUIR/6sem/mobilki/lab1/src/database/db.ts#81-98).
+- **Delete**: Функция [deleteResume](file:///c:/BSUIR/6sem/mobilki/lab1/src/database/db.ts#99-103) (удаление по долгому нажатию или кнопке на главном экране).
+
+## Общий вывод и оценка
+
+Проект на 100% соответствует требованиям ТЗ, указанным в файле [README.md](file:///c:/BSUIR/6sem/mobilki/lab1/README.md).
+Архитектура приложения построена грамотно: логика работы с базой данных, управление состоянием (через Context) настройки локализации и навигации разделены по соответствующим папкам (`src/database`, `src/context`, `src/i18n`, `src/navigation`). Использование TypeScript дополнительно повышает надежность кода за счет типизации передаваемых параметров и моделей БД. 
+
+**Оценка**: Задание выполнено отлично и в полном объеме.

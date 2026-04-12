@@ -11,7 +11,13 @@
         "cancel": "Cancel",
         "created": "Created",
         "count_one": "{{count}} resume",
-        "count_other": "{{count}} resumes"
+        "count_other": "{{count}} resumes",
+        "search": "Search resumes...",
+        "sortByName": "By name",
+        "sortByDate": "By date",
+        "filterByProfession": "Filter",
+        "allProfessions": "All professions",
+        "noResults": "No results found"
     },
     "resume": {
         "new": "New Resume",
@@ -42,6 +48,14 @@
         "language": "Language",
         "russian": "Russian",
         "english": "English",
+        "notifications": "Notifications",
+        "notificationsEnabled": "Daily Reminder",
+        "notificationTime": "Reminder Time",
+        "notificationBody": "Check your resumes!",
+        "sync": "Synchronization",
+        "syncUpload": "Upload to Server",
+        "syncDownload": "Download from Server",
+        "lastSync": "Last sync",
         "about": "About",
         "version": "Version"
     },

@@ -13,7 +13,13 @@
         "count_one": "{{count}} резюме",
         "count_few": "{{count}} резюме",
         "count_many": "{{count}} резюме",
-        "count_other": "{{count}} резюме"
+        "count_other": "{{count}} резюме",
+        "search": "Поиск резюме...",
+        "sortByName": "По имени",
+        "sortByDate": "По дате",
+        "filterByProfession": "Фильтр",
+        "allProfessions": "Все профессии",
+        "noResults": "Ничего не найдено"
     },
     "resume": {
         "new": "Новое резюме",
@@ -44,6 +50,14 @@
         "language": "Язык",
         "russian": "Русский",
         "english": "English",
+        "notifications": "Уведомления",
+        "notificationsEnabled": "Ежедневное напоминание",
+        "notificationTime": "Время напоминания",
+        "notificationBody": "Проверьте свои резюме!",
+        "sync": "Синхронизация",
+        "syncUpload": "Выгрузить на сервер",
+        "syncDownload": "Загрузить с сервера",
+        "lastSync": "Последняя синхр.",
         "about": "О приложении",
         "version": "Версия"
     },
