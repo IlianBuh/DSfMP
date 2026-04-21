@@ -7,12 +7,15 @@ import {
     StyleSheet,
     ScrollView,
     ActivityIndicator,
+    Alert, // Добавлен импорт Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useNotifications } from '../viewmodels/useNotifications';
 import { useRemoteSync } from '../viewmodels/useRemoteSync';
+import { signOut } from 'firebase/auth';
+import { auth } from '../config/firebase';
 
 export default function SettingsScreen() {
     const { t, i18n } = useTranslation();
@@ -23,6 +26,32 @@ export default function SettingsScreen() {
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
+    };
+
+    // Новая функция для обработки выхода из аккаунта
+    const handleLogout = () => {
+        Alert.alert(
+            'Выход', // Если ключа нет в i18n, используем текст по умолчанию
+            'Вы уверены, что хотите выйти из аккаунта?',
+            [
+                { 
+                    text: 'Отмена', 
+                    style: 'cancel' 
+                },
+                {
+                    text: 'Выйти',
+                    style: 'destructive', // Сделает текст красным на iOS
+                    onPress: async () => {
+                        try {
+                            await signOut(auth);
+                        } catch (error) {
+                            console.error('Ошибка при выходе: ', error);
+                            Alert.alert('Ошибка', 'Не удалось выйти из аккаунта.');
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     return (
@@ -253,11 +282,34 @@ export default function SettingsScreen() {
                         </Text>
                     </View>
                 </View>
+
+                {/* Account / Logout Section */}
+                <Text style={[styles.sectionTitle, { color: theme.error }]}>
+                    {'Аккаунт'}
+                </Text>
+                <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                    <TouchableOpacity
+                        style={styles.settingRow}
+                        onPress={handleLogout}
+                        activeOpacity={0.7}
+                    >
+                        <View style={styles.settingLeft}>
+                            <View style={[styles.iconCircle, { backgroundColor: theme.surfaceVariant }]}>
+                                <Ionicons name="log-out-outline" size={20} color={theme.error} />
+                            </View>
+                            <Text style={[styles.settingLabel, { color: theme.error }]}>
+                                {'Выйти из аккаунта'}
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+
             </ScrollView>
         </View>
     );
 }
 
+// Стили остались без изменений
 const styles = StyleSheet.create({
     container: {
         flex: 1,

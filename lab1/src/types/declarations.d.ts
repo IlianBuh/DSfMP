@@ -61,26 +61,6 @@ declare module '@expo/vector-icons' {
     };
 }
 
-declare module '@react-navigation/native' {
-    import { ComponentType, ReactNode } from 'react';
-    export interface Theme {
-        dark: boolean;
-        colors: {
-            primary: string;
-            background: string;
-            card: string;
-            text: string;
-            border: string;
-            notification: string;
-        };
-        fonts?: any;
-    }
-    export const DefaultTheme: Theme;
-    export const DarkTheme: Theme;
-    export const NavigationContainer: ComponentType<{ theme?: Theme; children?: ReactNode }>;
-    export function useFocusEffect(effect: () => void | (() => void)): void;
-}
-
 declare module '@react-navigation/bottom-tabs' {
     export function createBottomTabNavigator(): any;
 }

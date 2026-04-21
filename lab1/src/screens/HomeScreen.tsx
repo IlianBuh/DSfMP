@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     TextInput,
     StyleSheet,
+    Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -50,9 +51,16 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             <View style={styles.cardContent}>
                 <View style={styles.cardHeader}>
                     <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
-                        <Text style={[styles.avatarText, { color: theme.textOnPrimary }]}>
-                            {item.fullName ? item.fullName.charAt(0).toUpperCase() : '?'}
-                        </Text>
+                       {item.photoUrl ? (
+                            <Image 
+                                source={{ uri: item.photoUrl }} 
+                                style={styles.avatarImage} 
+                            />
+                        ) : (
+                            <Text style={[styles.avatarText, { color: theme.textOnPrimary }]}>
+                                {item.fullName ? item.fullName.charAt(0).toUpperCase() : '?'}
+                            </Text>
+                        )}
                     </View>
                     <View style={styles.cardInfo}>
                         <Text style={[styles.cardName, { color: theme.text }]} numberOfLines={1}>
@@ -435,5 +443,10 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.3,
         shadowRadius: 6,
+    },
+    avatarImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
     },
 });

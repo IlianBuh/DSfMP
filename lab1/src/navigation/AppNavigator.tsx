@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -46,7 +46,6 @@ export default function AppNavigator() {
     };
 
     return (
-        <NavigationContainer theme={navigationTheme}>
             <Tab.Navigator
                 screenOptions={{
                     headerShown: false,
@@ -96,6 +95,5 @@ export default function AppNavigator() {
                     }}
                 />
             </Tab.Navigator>
-        </NavigationContainer>
     );
 }

@@ -83,7 +83,7 @@ export function useNotifications() {
         await Notifications.scheduleNotificationAsync({
             content: {
                 title: 'Resume Builder',
-                body: '📝',
+                body: '📝My notification',
                 android: {
                     channelId: 'daily-reminder', 
                 }
