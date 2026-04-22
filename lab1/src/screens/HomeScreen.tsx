@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -16,6 +16,7 @@ import { useResumeSearch } from '../viewmodels/useResumeSearch';
 import { Resume } from '../database/db';
 import OfflineBanner from '../components/OfflineBanner';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { registerBackgroundSync, subOnRemoteStore } from '../service/firestore';
 
 type HomeScreenProps = {
     navigation: NativeStackNavigationProp<any>;
@@ -24,7 +25,7 @@ type HomeScreenProps = {
 export default function HomeScreen({ navigation }: HomeScreenProps) {
     const { t } = useTranslation();
     const { theme } = useTheme();
-    const { resumes, handleDelete, formatDate } = useResumes();
+    const { resumes, handleDelete, handleShare, formatDate } = useResumes();
     const {
         searchQuery,
         setSearchQuery,
@@ -38,6 +39,10 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         filteredResumes,
     } = useResumeSearch(resumes);
 
+    useEffect(() => {
+        const unsubscribe = subOnRemoteStore();
+        return () => unsubscribe();
+    }, [])
     const [showProfessionFilter, setShowProfessionFilter] = useState(false);
 
     const renderItem = ({ item }: { item: Resume }) => (
@@ -70,12 +75,21 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                             {item.profession}
                         </Text>
                     </View>
+                    {/* БЛОК КНОПОК ДЕЙСТВИЙ */}
+                <View style={styles.actionButtons}>
+                    <TouchableOpacity
+                        onPress={() => handleShare(item)}
+                        style={styles.actionBtn}
+                    >
+                        <Ionicons name="share-social-outline" size={20} color={theme.primary} />
+                    </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => handleDelete(item.id)}
-                        style={styles.deleteBtn}
+                        style={styles.actionBtn}
                     >
                         <Ionicons name="trash-outline" size={20} color={theme.error} />
                     </TouchableOpacity>
+                </View>
                 </View>
                 {item.email ? (
                     <View style={styles.cardDetail}>
@@ -116,6 +130,12 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
     const sortIcon = sortOrder === 'asc' ? 'arrow-up' : 'arrow-down';
     const sortLabel = sortField === 'date' ? t('home.sortByDate') : t('home.sortByName');
+
+    useEffect(() => {
+        (async () => {
+            await registerBackgroundSync();
+        })();
+    }, []);
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -448,5 +468,13 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         resizeMode: 'cover',
+    },
+    actionButtons: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    actionBtn: {
+        padding: 8,
+        marginLeft: 4,
     },
 });

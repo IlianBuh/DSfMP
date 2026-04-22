@@ -2,7 +2,7 @@ import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import { addResume, clearAllResumes, getResumes } from '../database/db';
+import { addResumeInput, clearAllResumes, getResumes } from '../database/db';
 import { DeviceEventEmitter } from 'react-native';
 
 // Ключи данных, которые мы синхронизируем (например, данные резюме)
@@ -28,11 +28,12 @@ export function useRemoteSync() {
         setError(null);
         try {
             const allResumes = await getResumes();
-            
-            await setDoc(doc(db, "users", userId), {
-                resumes: allResumes,
-                lastSync: new Date().toISOString()
-            });
+            const p: Promise<any>[] = []
+            for (let resume of allResumes) {
+                p.push(setDoc(doc(db, "resumes", String(resume.id)), resume));    
+            }
+
+            await Promise.all(p)
 
             await updateSyncTime();
         } catch (e: any) {
@@ -57,7 +58,7 @@ export function useRemoteSync() {
 
                 for (const res of resumes) {
                     // Используем твой addResume (он игнорирует старый ID и создает новый)
-                    await addResume(res);
+                    await addResumeInput(res);
                 }
 
                 DeviceEventEmitter.emit('db_updated');

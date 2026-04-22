@@ -1,8 +1,9 @@
-import { useState, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { useState, useCallback, useEffect } from 'react';
+import { Alert, DeviceEventEmitter, Share } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { getResumes, deleteResume, Resume } from '../database/db';
+import { subOnRemoteStore } from '../service/firestore';
 
 export function useResumes() {
     const { t } = useTranslation();
@@ -16,6 +17,13 @@ export function useResumes() {
             console.error('Failed to load resumes:', error);
         }
     };
+    useEffect(() => {
+        const subscription = DeviceEventEmitter.addListener('db_updated', () => {
+            loadResumes();
+        });
+
+        return () => subscription.remove();
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
@@ -46,6 +54,21 @@ export function useResumes() {
         );
     };
 
+    const handleShare = async (resume: Resume) => {
+        try {
+            // Форматируем объект в красивую JSON строку (2 пробела для отступов)
+            const resumeJson = JSON.stringify(resume, null, 2);
+            
+            await Share.share({
+                message: resumeJson,
+                title: `Резюме: ${resume.fullName}`, // Заголовок, используется на некоторых устройствах/в email
+            });
+        } catch (error: any) {
+            console.error('Failed to share resume:', error);
+            Alert.alert('Ошибка', error.message);
+        }
+    };
+
     const formatDate = (dateStr: string): string => {
         if (!dateStr) return '';
         const date = new Date(dateStr);
@@ -55,6 +78,7 @@ export function useResumes() {
     return {
         resumes,
         handleDelete,
+        handleShare,
         formatDate,
         refreshResumes: loadResumes,
     };

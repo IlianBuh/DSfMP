@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Alert, DeviceEventEmitter } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { addResume, getResume, updateResume, ResumeInput } from '../database/db';
+import { addResumeInput, getResume, updateResume, ResumeInput } from '../database/db';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadFile } from '../service/imageService';
 
@@ -104,7 +104,7 @@ export function useResumeForm(resumeId?: number) {
                 await updateResume(resumeId, form);
                 Alert.alert('✓', t('resume.updatedSuccess'));
             } else {
-                await addResume(form);
+                await addResumeInput(form);
                 Alert.alert('✓', t('resume.savedSuccess'));
             }
             onSuccess();

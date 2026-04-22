@@ -80,10 +80,10 @@ export const getResume = async (id: number): Promise<Resume | null> => {
     return result;
 };
 
-export const addResume = async (resume: ResumeInput): Promise<number> => {
+export const addResumeInput = async (resume: ResumeInput): Promise<number> => {
     const database = getDatabase();
     const result = await database.runAsync(
-        `INSERT INTO resumes (fullName, profession, email, phone, experience, education, skills, photoUrl)
+        `INSERT OR REPLACE INTO resumes (fullName, profession, email, phone, experience, education, skills, photoUrl)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, // Добавлен 8-й аргумент
         [
             resume.fullName,
@@ -98,7 +98,26 @@ export const addResume = async (resume: ResumeInput): Promise<number> => {
     );
     return result.lastInsertRowId;
 };
-
+export const addResume = async (resume: Resume): Promise<number> => {
+    const database = getDatabase();
+    const result = await database.runAsync(
+        `INSERT OR REPLACE INTO resumes (id, createdAt, fullName, profession, email, phone, experience, education, skills, photoUrl)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+        [
+            resume.id,
+            resume.createdAt,
+            resume.fullName,
+            resume.profession,
+            resume.email || '',
+            resume.phone || '',
+            resume.experience || '',
+            resume.education || '',
+            resume.skills || '',
+            resume.photoUrl || '', 
+        ]
+    );
+    return result.lastInsertRowId;
+};
 export const updateResume = async (id: number, resume: ResumeInput): Promise<void> => {
     const database = getDatabase();
     await database.runAsync(
