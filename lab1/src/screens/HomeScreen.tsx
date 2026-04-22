@@ -17,6 +17,7 @@ import { Resume } from '../database/db';
 import OfflineBanner from '../components/OfflineBanner';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { registerBackgroundSync, subOnRemoteStore } from '../service/firestore';
+import { useShakeToReset } from '../viewmodels/useShakeToReset';
 
 type HomeScreenProps = {
     navigation: NativeStackNavigationProp<any>;
@@ -44,6 +45,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         return () => unsubscribe();
     }, [])
     const [showProfessionFilter, setShowProfessionFilter] = useState(false);
+
+    useShakeToReset(() => {
+        setSearchQuery('');
+        setFilterProfession(null);
+    });
 
     const renderItem = ({ item }: { item: Resume }) => (
         <TouchableOpacity
